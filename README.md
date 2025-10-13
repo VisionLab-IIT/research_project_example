@@ -2,38 +2,66 @@
 Example to show possible approaches for project organization, config handling and experiment tracking for deep learning research.
 
 ## Preparations
-To use the example project, you should first make the necessary preparations to clone it and install the necessary packages. To make the preparations, you should 
+To use the example project, you should first make the necessary preparations to clone it and install the necessary packages.
 
-### 0. Clone the Repository
-Clone the repository with your preferred method and navigate into it in a terminal.
+### 0. Clone the repository
+Open a terminal and navigate to the directory where you would like the project to be placed, then
 ```bash
 git clone https://github.com/VisionLab-IIT/research_project_example.git
 ```
+### 1. Change your shell's working directory to the project
 ```bash
 cd research_project_example
 ```
-### 1. (optional) Create a Virtual Environment
-It is good practice to keep installed packages in separate virtual environments. On Linux, you can create a Python virtual environment with
+
+### 2. (optional) Create a Python virtual environment
+It is good practice to keep installed packages of separate projects in their own virtual environments. On Linux, you can create a Python virtual environment with
 ```bash
 python3 -m venv .venv
 ```
 Here, `.venv` will be the directory of your virtual environment. 
 
-### 2. Requirements
-You can install the requirements from `requirements.txt` with
+### 3. Install requirements
+You can install the requirements from `requirements.txt`.
+
+#### 3.1. If you want to install in your virtual environment, activate it first
+```bash
+source .venv/bin/activate
+```
+#### 3.2. Then install the requirements
 ```bash
 pip install -r requirements.txt
 ```
 
-# Training the model
+# Checkout the development stage of your choice
+You can navigate between the different stages of the project's development. Choose a stage from the list below so you can explore its changes.
 
-### 1. (optional, if venv has been created) Activate Virtual Environment
+Use `git checkout` to switch between stages with either the commit's hash
+```bash
+git checkout [commit_hash]
+```
+or the corresponding tag
+```bash
+git checkout [state_tag]
+```
+
+Here is a list of the most important stages:
+
+| Stage | Tag | Commit hash (short) |
+|-------|---------------------|------|
+| 1. Baseline | 01_baseline | |
+
+> [!WARNING]
+> From this point, the instructions may differ more between each stage, so please read carefully!
+# Training
+
+### 1. If you work in virtual environment, activate it.
 Before running the training script, activate the environment with
 ```bash
 source .venv/bin/activate
 ```
 
-### 2. Run Training Script
+### 2. Start Training
 > [!WARNING]
 > By default, the code will automatically download the dataset if it is not present in that location.
 
@@ -41,6 +69,6 @@ To train the example model (which is inspired by the [ConvNeXt](https://openacce
 ```bash
 python3 main_training.py --data_path ./data
 ```
-specifing the location of the training data with the `--data_path` argument. 
+specifying the location of the training data with the `--data_path` argument. 
 > [!TIP]
 > You can use a subset of the training data with the `--train_set_ratio` argument.
