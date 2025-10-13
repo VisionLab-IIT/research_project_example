@@ -47,9 +47,9 @@ git checkout [state_tag]
 
 Here is a list of the most important stages:
 
-| Stage | Tag | Commit hash (short) |
+| Stage | Tag | Commit hash (short version) |
 |-------|---------------------|------|
-| 1. Baseline | 01_baseline | |
+| 1. Baseline | 01_baseline | 27659e3 |
 
 > [!WARNING]
 > From this point, the instructions may differ more between each stage, so please read carefully!
