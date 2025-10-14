@@ -15,7 +15,7 @@ from torchvision.transforms.v2 import Compose, ToImage, ToDtype, Normalize
 from models.basic_model import ExampleModel
 
 from engine_training import train_one_epoch, validate_one_epoch
-from utils.metrics_printer import print_metrics
+from utils.tracker import ExperimentTracker
 
 
 def get_args():
@@ -47,7 +47,7 @@ def main(args):
     np.random.seed(args.seed)  # If NumPy random is used
     torch.manual_seed(args.seed)
     torch.backends.cudnn.benchmark = False
-    # Difficult to use
+    # Sometimes using deterministic algorithms may be difficult
     #torch.use_deterministic_algorithms(True)
 
     # Transforms
@@ -142,11 +142,15 @@ def main(args):
     loss_fn = torch.nn.CrossEntropyLoss()
 
     # Main loop
-    train_losses = []
-    val_losses = []
-    val_accs = []
-    best_val_acc = 0.0
-    train_start_time = datetime.now()
+    tracker = ExperimentTracker(
+        scalar_names=[
+            "train_losses",
+            "val_losses",
+            "val_accs"
+        ],
+        metrics_names=["val_acc"]
+    )
+    tracker.log_training_start()
     for epoch in range(args.num_epochs):
         print(f"Epoch {epoch}")
         train_loss = train_one_epoch(
@@ -165,42 +169,36 @@ def main(args):
             args.device
         )
 
-        if val_acc > best_val_acc:
+        is_new_best = tracker.update_metric("val_acc", val_acc)
+        if is_new_best:
             torch.save(
                 model.state_dict(),
                 args.model_weights_path
             )
 
-            best_val_acc = val_acc
+        tracker.log_scalar(name="train_losses", value=train_loss)
+        tracker.log_scalar(name="val_losses", value=val_loss)
+        tracker.log_scalar(name="val_accs", value=val_acc)
+    tracker.log_training_end()
 
-        train_losses.append(train_loss)
-        val_losses.append(val_loss)
-        val_accs.append(val_acc)
-
-    train_end_time = datetime.now()
-    print(f"Total training time: {train_end_time-train_start_time}")
-
-    plt.plot(train_losses, label="Train")
-    plt.plot(val_losses, label="Val")
-    plt.title("Train/Val Losses")
-    plt.grid(True)
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig("train_val_losses.png")
-    plt.close()
-
-    plt.plot(val_accs)
-    plt.title("Val Accuracy")
-    plt.grid(True)
-    plt.tight_layout()
-    plt.savefig("val_accs.png")
-    plt.close()
-
-    print_metrics(
-        {
-            "Accuracy" : best_val_acc
-        }
+    tracker.plot_figure(
+        scalar_names=[
+            "train_losses",
+            "val_losses"
+        ],
+        filename="train_val_losses.png",
+        title="Train/Val Losses"
     )
+
+    tracker.plot_figure(
+        scalar_names=[
+            "val_accs",
+        ],
+        filename="val_accs.png",
+        title="Val Accuracy"
+    )
+
+    tracker.print_best_metrics()
 
 
 if __name__ == "__main__":
