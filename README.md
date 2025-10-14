@@ -50,7 +50,7 @@ Here is a list of the most important stages:
 | Stage | Tag | Commit hash (short version) | Description |
 |-------|---------------------|------|--------|
 | 1. Baseline | 01_baseline | 27659e3 | The first state worth checking out as a starting point. |
-| 2. Simple Tracker | 02_simple_tracker |  | `ExperimentTracker` class to encapsulate functionalities for logging, comparison and reproducibility. <br>At this stage, only the basics from stage 01 are reorganized here. |
+| 2. Simple Tracker | 02_simple_tracker | bc83b91 | `ExperimentTracker` class to encapsulate functionalities for logging, comparison and reproducibility. <br>At this stage, only the basics from stage 01 are reorganized here. |
 
 > [!IMPORTANT]
 > From this point, the instructions may differ more between each stage, so please read carefully!
