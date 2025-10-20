@@ -36,21 +36,22 @@ pip install -r requirements.txt
 # Checkout the development stage of your choice
 You can navigate between the different stages of the project's development. Choose a stage from the list below so you can explore its changes.
 
-Use `git checkout` to switch between stages with either the commit's hash
-```bash
-git checkout [commit_hash]
-```
-or the corresponding tag
+Use `git checkout` to switch between stages with either the stage's tag
 ```bash
 git checkout [state_tag]
 ```
+or the corresponding commit hash
+```bash
+git checkout [commit_hash]
+```
 
-Here is a list of the most important stages:
+Here is the list of the most important stages:
 
 | Stage | Tag | Commit hash (short version) | Description |
 |-------|---------------------|------|--------|
 | 1. Baseline | 01_baseline | 27659e3 | The first state worth checking out as a starting point. |
-| 2. Simple Tracker | 02_simple_tracker | bc83b91 | `ExperimentTracker` class to encapsulate functionalities for logging, comparison and reproducibility. <br>At this stage, only the basics from stage 01 are reorganized here. |
+| 2. Simple Tracker | 02_simple_tracker | 82a1267 | `ExperimentTracker` class to encapsulate functionalities for logging, comparison and reproducibility. <br>At this stage, only the basics from stage 01 are reorganized here. |
+| 3. Log Directories | 02_log_dirs |  | Tracking logs into separate directories under log. <br>This enables basic comparisons like checking plots of different runs. |
 
 > [!IMPORTANT]
 > From this point, the instructions may differ more between each stage, so please read carefully!
@@ -64,7 +65,7 @@ source .venv/bin/activate
 
 ### 2. Start Training
 > [!WARNING]
-> By default, the code will automatically download the dataset if it is not present in that location.
+> By default, the code will automatically create the given data path if it does not exist and download the dataset if it is not present in that location.
 
 To train the example model (which is inspired by the [ConvNeXt](https://openaccess.thecvf.com/content/CVPR2022/papers/Liu_A_ConvNet_for_the_2020s_CVPR_2022_paper.pdf) architecture), run
 ```bash

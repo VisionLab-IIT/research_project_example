@@ -143,12 +143,13 @@ def main(args):
 
     # Main loop
     tracker = ExperimentTracker(
+        log_dir=args.log_dir,
         scalar_names=[
             "train_losses",
             "val_losses",
             "val_accs"
         ],
-        metrics_names=["val_acc"]
+        metric_names=["val_acc"]
     )
     tracker.log_training_start()
     for epoch in range(args.num_epochs):
@@ -180,13 +181,15 @@ def main(args):
         tracker.log_scalar(name="val_losses", value=val_loss)
         tracker.log_scalar(name="val_accs", value=val_acc)
     tracker.log_training_end()
+    
+    tracker.save_logs()
 
     tracker.plot_figure(
         scalar_names=[
             "train_losses",
             "val_losses"
         ],
-        filename="train_val_losses.png",
+        filename=args.log_dir / "train_val_losses.png",
         title="Train/Val Losses"
     )
 
@@ -194,7 +197,7 @@ def main(args):
         scalar_names=[
             "val_accs",
         ],
-        filename="val_accs.png",
+        filename=args.log_dir / "val_accs.png",
         title="Val Accuracy"
     )
 
@@ -216,8 +219,8 @@ if __name__ == "__main__":
     args.model_weights_path = args.ckpt_dir / "model.pth"
     
     # Log directory
-    log_dir = project_dir / "log"
-    log_dir.mkdir(exist_ok=True)
+    log_dir = project_dir / "log" / datetime.strftime(datetime.now(), "%Y%m%d%H%M")
+    log_dir.mkdir(parents=True)
     args.log_dir = log_dir
 
     main(args)

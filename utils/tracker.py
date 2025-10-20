@@ -1,24 +1,29 @@
-from utils.metrics_printer import print_metrics
+from pathlib import Path
+from utils.metrics_printer import decorate_metrics
 import matplotlib.pyplot as plt
 from datetime import datetime
+import json
 
 
 class ExperimentTracker:
     def __init__(
-            self, 
+            self,
+            log_dir,
             scalar_names, 
-            metrics_names
+            metric_names
     ):
         assert isinstance(scalar_names, (list, tuple)), f"scalar_names must be either list or tupple, got {type(scalar_names)}"
-        assert isinstance(metrics_names, (list, tuple)), f"metrics_names must be either list or tupple, got {type(metrics_names)}"
+        assert isinstance(metric_names, (list, tuple)), f"metric_names must be either list or tupple, got {type(metric_names)}"
 
+        self.log_dir = Path(log_dir)
+        self.scalar_names = scalar_names
+        self.metric_names = metric_names
         self.scalars = dict()
         for scalar_name in scalar_names:
             self.scalars[scalar_name] = []
         self.best_metrics = dict()
-        for metrics_name in metrics_names:
-            print(metrics_name)
-            self.best_metrics[metrics_name] = 0.0
+        for metric_name in metric_names:
+            self.best_metrics[metric_name] = 0.0
         
     def log_scalar(
             self, 
@@ -40,7 +45,7 @@ class ExperimentTracker:
         return result
     
     def print_best_metrics(self):
-        print_metrics(self.best_metrics)
+        print(decorate_metrics(self.best_metrics))
     
     def plot_figure(
             self, 
@@ -66,7 +71,7 @@ class ExperimentTracker:
         if ylabel is not None:
             plt.ylabel(ylabel)
         plt.tight_layout()
-        plt.savefig(filename)
+        plt.savefig(self.log_dir / Path(filename))
         plt.close()
 
     def log_training_start(self):
@@ -76,3 +81,13 @@ class ExperimentTracker:
         self.train_end_time = datetime.now()
         self.train_duration = self.train_end_time-self.train_start_time
         print(f"Total training time: {self.train_duration}")
+
+    def save_logs(self):
+        for scalar_name in self.scalar_names:
+            scalar_log_file = self.log_dir / Path(scalar_name+".json")
+            with open(scalar_log_file, "w") as f:
+                json.dump(self.scalars[scalar_name], f)
+
+        with open(self.log_dir/"metrics.txt", "w") as f:
+            f.write(decorate_metrics(self.best_metrics))
+        
