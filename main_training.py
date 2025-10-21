@@ -122,6 +122,7 @@ def main(args):
         num_stages=4,
         num_classes=100
     )
+    model = model.to(args.device)
 
     # Optimizer, Scheduler, Loss, Tracking
     optimizer = optim.AdamW(
