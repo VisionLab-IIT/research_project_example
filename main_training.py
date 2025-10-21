@@ -28,7 +28,6 @@ def get_args():
     parser.add_argument("--data_path", type=str, help="Path of the training and validation data")
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--num_workers", type=int, default=4)
-    parser.add_argument("--train_set_ratio", type=float, default=1.0)
     # Schedule
     parser.add_argument("--num_epochs", type=int, default=2)
     parser.add_argument("--warmup_epochs", type=int, default=1)
@@ -81,15 +80,6 @@ def main(args):
         target_transform=torch.tensor,
         download=True,
     )
-    # To make faster test runs of the training scipt
-    if args.train_set_ratio < 1.0:
-        train_indices = torch.randperm(len(train_set))
-        train_indices = train_indices[:int(args.train_set_ratio*len(train_set))]
-
-        train_set = torch.utils.data.Subset(
-            train_set,
-            indices=train_indices
-        )
 
     val_set = CIFAR100(
         root=args.data_path,
