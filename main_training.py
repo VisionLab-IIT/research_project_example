@@ -192,8 +192,10 @@ def main(args):
             wd=args.weight_decay
         )
     )
-    tracker.save_logs()
-    tracker.print_best_metrics()
+    tracker.finalize_run(
+        save_logs=True,
+        print_metrics=True
+    )
 
 
 if __name__ == "__main__":

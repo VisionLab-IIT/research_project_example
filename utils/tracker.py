@@ -57,10 +57,9 @@ class ExperimentTracker:
             name:str,
             value
     ):
-        result = False
-        if value > self.best_metrics[name]:
+        result = (value > self.best_metrics[name])
+        if result:
             self.best_metrics[name] = value
-            result = True
 
         return result
     
@@ -83,4 +82,16 @@ class ExperimentTracker:
 
         with open(self.log_dir/"metrics.txt", "w") as f:
             f.write(decorate_metrics(self.best_metrics))
-        
+
+    def finalize_run(
+            self,
+            save_logs:bool=False,
+            print_metrics:bool=False
+    ):
+        if self.tensorboard_writer is not None:
+            self.tensorboard_writer.flush()
+
+        if save_logs:
+            self.save_logs()
+        if print_metrics:
+            self.print_best_metrics()
