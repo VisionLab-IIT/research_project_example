@@ -123,7 +123,7 @@ def main(args):
         num_classes=100
     )
 
-    # Optimizer, Scheduler, loss, tracking
+    # Optimizer, Scheduler, Loss, Tracking
     optimizer = optim.AdamW(
         params=model.parameters(),
         lr=args.lr,
