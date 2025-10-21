@@ -36,14 +36,11 @@ pip install -r requirements.txt
 # Checkout the development stage of your choice
 You can navigate between the different stages of the project's development. Choose a stage from the list below so you can explore its changes.
 
-Use `git checkout` to switch between stages with either the stage's tag
+Use `git checkout` to switch between stages:
 ```bash
-git checkout [state_tag]
+git checkout <stage>
 ```
-or the corresponding commit hash
-```bash
-git checkout [commit_hash]
-```
+Where `<stage>` can be either the stage tag or the corresponding commit hash.
 
 Here is the list of the most important stages:
 
