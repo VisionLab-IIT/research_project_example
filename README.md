@@ -49,6 +49,7 @@ Here is the list of the most important stages:
 | 1. Baseline | 01_baseline | 27659e3 | The first state worth checking out as a starting point. |
 | 2. Simple Tracker | 02_simple_tracker | 82a1267 | `ExperimentTracker` class to encapsulate functionalities for logging, comparison and reproducibility. <br>At this stage, only the basics from stage 01 are reorganized here. |
 | 3. Log Directories | 02_log_dirs | e5b5cee | Tracking logs into separate directories under log. <br>This enables basic comparisons like checking plots of different runs. |
+| 4. Using TensorBoard | 04_tensorboard |  | Logging into [TensorBoard](https://www.tensorflow.org/tensorboard) logs for better visualizations and comparison.|
 
 > [!IMPORTANT]
 > From this point, the instructions may differ more between each stage, so please read carefully!

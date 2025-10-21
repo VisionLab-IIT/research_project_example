@@ -1,6 +1,7 @@
 __pycache__
 .venv
 log
+log_archive
 ckpt
 data
 *.png

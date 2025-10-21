@@ -150,7 +150,8 @@ def main(args):
             "val_losses",
             "val_accs"
         ],
-        metric_names=["val_acc"]
+        metric_names=["val_acc"],
+        use_tensorboard=True
     )
     tracker.log_training_start()
     for epoch in range(args.num_epochs):
@@ -178,30 +179,20 @@ def main(args):
                 args.model_weights_path
             )
 
-        tracker.log_scalar(name="train_losses", value=train_loss)
-        tracker.log_scalar(name="val_losses", value=val_loss)
-        tracker.log_scalar(name="val_accs", value=val_acc)
+        tracker.log_scalar(name="train_losses", value=train_loss, index=epoch)
+        tracker.log_scalar(name="val_losses", value=val_loss, index=epoch)
+        tracker.log_scalar(name="val_accs", value=val_acc, index=epoch)
     tracker.log_training_end()
     
+    tracker.log_hparams_and_metrics(
+        hparams=dict(
+            num_epochs=args.num_epochs,
+            lr=args.lr,
+            batch_size=args.batch_size,
+            wd=args.weight_decay
+        )
+    )
     tracker.save_logs()
-
-    tracker.plot_figure(
-        scalar_names=[
-            "train_losses",
-            "val_losses"
-        ],
-        filename=args.log_dir / "train_val_losses.png",
-        title="Train/Val Losses"
-    )
-
-    tracker.plot_figure(
-        scalar_names=[
-            "val_accs",
-        ],
-        filename=args.log_dir / "val_accs.png",
-        title="Val Accuracy"
-    )
-
     tracker.print_best_metrics()
 
 

@@ -1,8 +1,8 @@
 from pathlib import Path
-from utils.metrics_printer import decorate_metrics
-import matplotlib.pyplot as plt
 from datetime import datetime
 import json
+from torch.utils.tensorboard import SummaryWriter
+from utils.metrics_printer import decorate_metrics
 
 
 class ExperimentTracker:
@@ -10,7 +10,8 @@ class ExperimentTracker:
             self,
             log_dir,
             scalar_names, 
-            metric_names
+            metric_names,
+            use_tensorboard=False
     ):
         assert isinstance(scalar_names, (list, tuple)), f"scalar_names must be either list or tupple, got {type(scalar_names)}"
         assert isinstance(metric_names, (list, tuple)), f"metric_names must be either list or tupple, got {type(metric_names)}"
@@ -18,6 +19,10 @@ class ExperimentTracker:
         self.log_dir = Path(log_dir)
         self.scalar_names = scalar_names
         self.metric_names = metric_names
+        self.tensorboard_writer = None
+        if use_tensorboard:
+            self.tensorboard_writer = SummaryWriter(self.log_dir)
+
         self.scalars = dict()
         for scalar_name in scalar_names:
             self.scalars[scalar_name] = []
@@ -28,9 +33,24 @@ class ExperimentTracker:
     def log_scalar(
             self, 
             name:str, 
-            value
+            value,
+            index
     ):
         self.scalars[name].append(value)
+        
+        if self.tensorboard_writer is not None:
+            self.tensorboard_writer.add_scalar(name, value, index)
+
+    def log_hparams_and_metrics(
+        self,
+        hparams:dict
+    ):
+        if self.tensorboard_writer is not None:
+            self.tensorboard_writer.add_hparams(
+                hparam_dict=hparams,
+                metric_dict=self.best_metrics,
+                run_name="."
+            )
 
     def update_metric(
             self,
@@ -47,33 +67,6 @@ class ExperimentTracker:
     def print_best_metrics(self):
         print(decorate_metrics(self.best_metrics))
     
-    def plot_figure(
-            self, 
-            scalar_names:list,
-            filename,
-            title=None,
-            xlabel=None,
-            ylabel=None
-    ):
-        for scalar_name in scalar_names:
-            plt.plot(
-                self.scalars[scalar_name], 
-                label=scalar_name
-            )
-
-        plt.grid(True)
-        if len(scalar_names) > 1:
-            plt.legend()
-        if title is not None:
-            plt.title(title)
-        if xlabel is not None:
-            plt.xlabel(xlabel)
-        if ylabel is not None:
-            plt.ylabel(ylabel)
-        plt.tight_layout()
-        plt.savefig(self.log_dir / Path(filename))
-        plt.close()
-
     def log_training_start(self):
         self.train_start_time = datetime.now()
 
