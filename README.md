@@ -70,5 +70,3 @@ To train the example model (which is inspired by the [ConvNeXt](https://openacce
 python3 main_training.py --data_path ./data
 ```
 specifying the location of the training data with the `--data_path` argument. 
-> [!TIP]
-> You can use a subset of the training data with the `--train_set_ratio` argument.
