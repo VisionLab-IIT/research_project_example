@@ -50,7 +50,7 @@ Here is the list of the most important stages:
 | 2. Simple Tracker | 02_simple_tracker | 82a1267 | `ExperimentTracker` class to encapsulate functionalities for logging, comparison and reproducibility. <br>At this stage, only the basics from stage 01 are reorganized here. |
 | 3. Log Directories | 02_log_dirs | e5b5cee | Tracking logs into separate directories under log. <br>This enables basic comparisons like checking plots of different runs. |
 | 4. Using TensorBoard | 04_tensorboard | 6b742dd | Logging into [TensorBoard](https://www.tensorflow.org/tensorboard) for better visualizations and comparison.|
-| 5. Basic Config | 05_basic_config |  | - Introducting basic YAML-based configuration for better reproducibility.<br>- Moving dataset download to separate script under helpers. |
+| 5. Basic Config | 05_basic_config | 556feef | - Introducting basic YAML-based configuration for better reproducibility.<br>- Moving dataset download to separate script under helpers. |
 
 > [!IMPORTANT]
 > From this point, the instructions may differ more between each stage, so please read carefully!
@@ -63,7 +63,7 @@ source .venv/bin/activate
 ```
 
 ### 2. Download Dataset
-Currently used dataset is [CIFAR100](https://www.cs.toronto.edu/~kriz/cifar.html). You can download it to the project directory with the following scipt:
+The currently used dataset is [CIFAR100](https://www.cs.toronto.edu/~kriz/cifar.html). You can download it to the project directory with the following scipt:
 ```bash
 python3 helpers/download_dataset.py --data_path=./data
 ```
