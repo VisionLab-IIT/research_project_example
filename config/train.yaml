@@ -1,0 +1,9 @@
+description: "Baseline"
+seed: !!int 0
+device: "cuda"
+batch_size: !!int 32
+num_workers: !!int 4
+num_epochs: !!int 3
+warmup_epochs: !!int 1
+lr: !!float 1e-3
+weight_decay: !!float 1e-4

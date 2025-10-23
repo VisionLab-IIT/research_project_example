@@ -16,35 +16,47 @@ from models.basic_model import ExampleModel
 
 from engine_training import train_one_epoch, validate_one_epoch
 from utils.tracker import ExperimentTracker
+from utils.config import Config
 
 
 def get_args():
     parser = argparse.ArgumentParser()
 
     # General
-    parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--device", type=str, default="cpu")
+    parser.add_argument("--seed", type=int)
+    parser.add_argument("--device", type=str)
+    parser.add_argument(
+        "--config_path", 
+        type=Path,
+        help="Path to the YAML configuration file",
+        required=True
+    )
     # Data
-    parser.add_argument("--data_path", type=str, help="Path of the training and validation data")
-    parser.add_argument("--batch_size", type=int, default=32)
-    parser.add_argument("--num_workers", type=int, default=4)
+    parser.add_argument(
+        "--data_path", 
+        type=Path, 
+        help="Path to the dataset",
+        required=True
+    )
+    parser.add_argument("--batch_size", type=int)
+    parser.add_argument("--num_workers", type=int)
     # Schedule
-    parser.add_argument("--num_epochs", type=int, default=2)
-    parser.add_argument("--warmup_epochs", type=int, default=1)
+    parser.add_argument("--num_epochs", type=int)
+    parser.add_argument("--warmup_epochs", type=int)
     # Optimizer
-    parser.add_argument("--lr", type=float, default=1e-3)
-    parser.add_argument("--weight_decay", type=float, default=1e-4)
+    parser.add_argument("--lr", type=float)
+    parser.add_argument("--weight_decay", type=float)
 
     args = parser.parse_args()
     
     return args
 
 
-def main(args):
+def main(args, config):
     # Basic reproducibility settings
-    random.seed(args.seed)  # If Python random is used
-    np.random.seed(args.seed)  # If NumPy random is used
-    torch.manual_seed(args.seed)
+    random.seed(config["seed"])  # If Python random is used
+    np.random.seed(config["seed"])  # If NumPy random is used
+    torch.manual_seed(config["seed"])
     torch.backends.cudnn.benchmark = False
     # Sometimes using deterministic algorithms may be difficult
     #torch.use_deterministic_algorithms(True)
@@ -78,7 +90,6 @@ def main(args):
         train=True,
         transform=train_transforms,
         target_transform=torch.tensor,
-        download=True,
     )
 
     val_set = CIFAR100(
@@ -86,15 +97,14 @@ def main(args):
         train=False,
         transform=val_transforms,
         target_transform=torch.tensor,
-        download=True,
     )
 
     # Dataloaders
     train_loader = DataLoader(
         dataset=train_set,
-        batch_size=args.batch_size,
+        batch_size=config["batch_size"],
         shuffle=True,
-        num_workers=args.num_workers,
+        num_workers=config["num_workers"],
         drop_last=True
     )
 
@@ -102,7 +112,7 @@ def main(args):
         dataset=val_set,
         batch_size=1,
         shuffle=False,
-        num_workers=args.num_workers,
+        num_workers=config["num_workers"],
         drop_last=False
     )
 
@@ -112,20 +122,20 @@ def main(args):
         num_stages=4,
         num_classes=100
     )
-    model = model.to(args.device)
+    model = model.to(config["device"])
 
     # Optimizer, Scheduler, Loss, Tracking
     optimizer = optim.AdamW(
         params=model.parameters(),
-        lr=args.lr,
-        weight_decay=args.weight_decay
+        lr=config["lr"],
+        weight_decay=config["weight_decay"]
     )
 
     scheduler = lr_scheduler.OneCycleLR(
         optimizer=optimizer,
-        total_steps=args.num_epochs*len(train_loader),
-        max_lr=args.lr,
-        pct_start=args.warmup_epochs/args.num_epochs,
+        total_steps=config["num_epochs"]*len(train_loader),
+        max_lr=config["lr"],
+        pct_start=config["warmup_epochs"]/config["num_epochs"],
         div_factor=1e3,
         final_div_factor=1e4
     )
@@ -144,7 +154,7 @@ def main(args):
         use_tensorboard=True
     )
     tracker.log_training_start()
-    for epoch in range(args.num_epochs):
+    for epoch in range(config["num_epochs"]):
         print(f"Epoch {epoch}")
         train_loss = train_one_epoch(
             model,
@@ -152,14 +162,14 @@ def main(args):
             loss_fn,
             optimizer,
             scheduler,
-            args.device
+            config["device"]
         )
 
         val_loss, val_acc = validate_one_epoch(
             model,
             val_loader,
             loss_fn,
-            args.device
+            config["device"]
         )
 
         is_new_best = tracker.update_metric("val_acc", val_acc)
@@ -176,16 +186,17 @@ def main(args):
     
     tracker.log_hparams_and_metrics(
         hparams=dict(
-            num_epochs=args.num_epochs,
-            lr=args.lr,
-            batch_size=args.batch_size,
-            wd=args.weight_decay
+            num_epochs=config["num_epochs"],
+            lr=config["lr"],
+            batch_size=config["batch_size"],
+            wd=config["weight_decay"]
         )
     )
     tracker.finalize_run(
         save_logs=True,
         print_metrics=True
     )
+    config.save(args.log_dir/args.config_path.name)
 
 
 if __name__ == "__main__":
@@ -203,8 +214,16 @@ if __name__ == "__main__":
     args.model_weights_path = args.ckpt_dir / "model.pth"
     
     # Log directory
-    log_dir = project_dir / "log" / datetime.strftime(datetime.now(), "%Y%m%d%H%M")
+    run_start_time = datetime.strftime(datetime.now(), "%Y%m%d%H%M")
+    log_dir = project_dir / "log" / run_start_time
     log_dir.mkdir(parents=True)
     args.log_dir = log_dir
 
-    main(args)
+    config = Config()
+    config.load(args.config_path)
+    config.update(args)
+    print("---------- Config ----------")
+    print(config)
+    print("----------------------------")
+
+    main(args, config)
