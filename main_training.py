@@ -16,7 +16,7 @@ from models.basic_model import ExampleModel
 
 from engine_training import train_one_epoch, validate_one_epoch
 from utils.tracker import ExperimentTracker
-from utils.config import Config
+from omegaconf import OmegaConf
 
 
 def get_args():
@@ -38,25 +38,17 @@ def get_args():
         help="Path to the dataset",
         required=True
     )
-    parser.add_argument("--batch_size", type=int)
-    parser.add_argument("--num_workers", type=int)
-    # Schedule
-    parser.add_argument("--num_epochs", type=int)
-    parser.add_argument("--warmup_epochs", type=int)
-    # Optimizer
-    parser.add_argument("--lr", type=float)
-    parser.add_argument("--weight_decay", type=float)
 
-    args = parser.parse_args()
+    args, unknown_args = parser.parse_known_args()
     
-    return args
+    return args, unknown_args
 
 
 def main(args, config):
     # Basic reproducibility settings
-    random.seed(config["seed"])  # If Python random is used
-    np.random.seed(config["seed"])  # If NumPy random is used
-    torch.manual_seed(config["seed"])
+    random.seed(config.seed)  # If Python random is used
+    np.random.seed(config.seed)  # If NumPy random is used
+    torch.manual_seed(config.seed)
     torch.backends.cudnn.benchmark = False
     # Sometimes using deterministic algorithms may be difficult
     #torch.use_deterministic_algorithms(True)
@@ -102,9 +94,9 @@ def main(args, config):
     # Dataloaders
     train_loader = DataLoader(
         dataset=train_set,
-        batch_size=config["batch_size"],
+        batch_size=config.batch_size,
         shuffle=True,
-        num_workers=config["num_workers"],
+        num_workers=config.num_workers,
         drop_last=True
     )
 
@@ -112,7 +104,7 @@ def main(args, config):
         dataset=val_set,
         batch_size=1,
         shuffle=False,
-        num_workers=config["num_workers"],
+        num_workers=config.num_workers,
         drop_last=False
     )
 
@@ -122,20 +114,20 @@ def main(args, config):
         num_stages=4,
         num_classes=100
     )
-    model = model.to(config["device"])
+    model = model.to(config.device)
 
     # Optimizer, Scheduler, Loss, Tracking
     optimizer = optim.AdamW(
         params=model.parameters(),
-        lr=config["lr"],
-        weight_decay=config["weight_decay"]
+        lr=config.lr,
+        weight_decay=config.weight_decay
     )
 
     scheduler = lr_scheduler.OneCycleLR(
         optimizer=optimizer,
-        total_steps=config["num_epochs"]*len(train_loader),
-        max_lr=config["lr"],
-        pct_start=config["warmup_epochs"]/config["num_epochs"],
+        total_steps=config.num_epochs*len(train_loader),
+        max_lr=config.lr,
+        pct_start=config.warmup_epochs/config.num_epochs,
         div_factor=1e3,
         final_div_factor=1e4
     )
@@ -154,7 +146,7 @@ def main(args, config):
         use_tensorboard=True
     )
     tracker.log_training_start()
-    for epoch in range(config["num_epochs"]):
+    for epoch in range(config.num_epochs):
         print(f"Epoch {epoch}")
         train_loss = train_one_epoch(
             model,
@@ -162,14 +154,14 @@ def main(args, config):
             loss_fn,
             optimizer,
             scheduler,
-            config["device"]
+            config.device
         )
 
         val_loss, val_acc = validate_one_epoch(
             model,
             val_loader,
             loss_fn,
-            config["device"]
+            config.device
         )
 
         is_new_best = tracker.update_metric("val_acc", val_acc)
@@ -186,22 +178,22 @@ def main(args, config):
     
     tracker.log_hparams_and_metrics(
         hparams=dict(
-            num_epochs=config["num_epochs"],
-            lr=config["lr"],
-            batch_size=config["batch_size"],
-            wd=config["weight_decay"]
+            num_epochs=config.num_epochs,
+            lr=config.lr,
+            batch_size=config.batch_size,
+            wd=config.weight_decay
         )
     )
     tracker.finalize_run(
         save_logs=True,
         print_metrics=True
     )
-    config.save(args.log_dir/args.config_path.name)
+    OmegaConf.save(config, args.log_dir/args.config_path.name)
 
 
 if __name__ == "__main__":
     # Parse command line arguments
-    args = get_args()
+    args, unknown_args = get_args()
 
     args.data_path = Path(args.data_path)
     args.data_path.mkdir(exist_ok=True)
@@ -219,11 +211,17 @@ if __name__ == "__main__":
     log_dir.mkdir(parents=True)
     args.log_dir = log_dir
 
-    config = Config()
-    config.load(args.config_path)
-    config.update(args)
+    # Loading config from YAML
+    config = OmegaConf.load(args.config_path)
+    # Loading config overrides from CLI
+    cli_config = OmegaConf.from_dotlist(unknown_args)
+    # Filtering only keys that exist in YAML-based config
+    cli_config = {k:v for k, v in cli_config.items() if k in config.keys()}
+    cli_config = OmegaConf.create(cli_config)
+    # Overriding YAML config with CLI config
+    config = OmegaConf.merge(config, cli_config)
     print("---------- Config ----------")
-    print(config)
+    print(OmegaConf.to_yaml(config))
     print("----------------------------")
 
     main(args, config)
