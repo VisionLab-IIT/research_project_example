@@ -2,8 +2,9 @@ from pathlib import Path
 import argparse
 from datetime import datetime
 import random
+
 import numpy as np
-import matplotlib.pyplot as plt
+from omegaconf import OmegaConf
 
 import torch
 from torch import optim
@@ -12,11 +13,9 @@ from torchvision.datasets import CIFAR100
 from torch.utils.data import DataLoader
 from torchvision.transforms.v2 import Compose, ToImage, ToDtype, Normalize
 
-from models.basic_model import ExampleModel
-
+import models
 from engine_training import train_one_epoch, validate_one_epoch
 from utils.tracker import ExperimentTracker
-from omegaconf import OmegaConf
 
 
 def get_args():
@@ -109,30 +108,33 @@ def main(args, config):
     )
 
     # Model
-    model = ExampleModel(
-        feature_size=16,
-        num_stages=4,
-        num_classes=100
-    )
+    # Finding model class based on config
+    # Converting config.model.params to keyword arguments
+    model = getattr(models, config.model.name)(**config.model.params)
     model = model.to(config.device)
 
     # Optimizer, Scheduler, Loss, Tracking
-    optimizer = optim.AdamW(
+    # Finding optimizer class based on config
+    # Converting config.optimizer.params to keyword arguments
+    optimizer = getattr(optim, config.optimizer.name)(
         params=model.parameters(),
-        lr=config.lr,
-        weight_decay=config.weight_decay
+        **config.optimizer.params,
     )
 
-    scheduler = lr_scheduler.OneCycleLR(
+    # Finding scheduler class based on config
+    scheduler_cls = getattr(lr_scheduler, config.scheduler.name)
+    scheduler_params = config.scheduler.params
+    # Extending sheduler parameters
+    if scheduler_cls is lr_scheduler.OneCycleLR:
+        scheduler_params["total_steps"] = config.num_epochs*len(train_loader)
+    # Converting scheduler_params to keyword arguments
+    scheduler = scheduler_cls(
         optimizer=optimizer,
-        total_steps=config.num_epochs*len(train_loader),
-        max_lr=config.lr,
-        pct_start=config.warmup_epochs/config.num_epochs,
-        div_factor=1e3,
-        final_div_factor=1e4
+        **scheduler_params
     )
 
-    loss_fn = torch.nn.CrossEntropyLoss()
+    # Finding loss class based on config
+    loss_fn = getattr(torch.nn, config.loss_fn.name)()
 
     # Main loop
     tracker = ExperimentTracker(
@@ -179,9 +181,9 @@ def main(args, config):
     tracker.log_hparams_and_metrics(
         hparams=dict(
             num_epochs=config.num_epochs,
-            lr=config.lr,
+            lr=config.optimizer.params.lr,
             batch_size=config.batch_size,
-            wd=config.weight_decay
+            wd=config.optimizer.params.weight_decay
         )
     )
     tracker.finalize_run(
@@ -221,7 +223,7 @@ if __name__ == "__main__":
     # Overriding YAML config with CLI config
     config = OmegaConf.merge(config, cli_config)
     print("---------- Config ----------")
-    print(OmegaConf.to_yaml(config))
+    print(OmegaConf.to_yaml(config).rstrip('\n'))
     print("----------------------------")
 
     main(args, config)

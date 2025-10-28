@@ -33,7 +33,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-# Checkout the development stage of your choice
+## Checkout the development stage of your choice
 You can navigate between the different stages of the project's development. Choose a stage from the list below so you can explore its changes.
 
 Use `git checkout` to switch between stages:
@@ -52,10 +52,11 @@ Here is the list of the most important stages:
 | 4. Using TensorBoard | 04_tensorboard | 6b742dd | Logging into [TensorBoard](https://www.tensorflow.org/tensorboard) for better visualizations and comparison.|
 | 5. Basic Config | 05_basic_config | 556feef | - Introducting basic YAML-based configuration for better reproducibility.<br>- Moving dataset download to separate script under helpers. |
 | 6. Using OmegaConf | 06_omegaconf | 146971f | Using [OmegaConf](https://omegaconf.readthedocs.io) for convenient config handling and object-style config access. |
+| 7. Dynamic Loading | 07_dynamic_loading |  | Loading model, optimizer, scheduler and loss function dynamically based on config.<br> See the [`getattr()`](https://docs.python.org/3/library/functions.html#getattr) documentation for details. |
 
+## Training
 > [!IMPORTANT]
-> From this point, the instructions may differ more between each stage, so please read carefully!
-# Training
+> Training instructions may differ between each stage, so please read carefully!
 
 ### 1. If you work in virtual environment, activate it.
 Before running the training script, activate the environment with
@@ -82,5 +83,5 @@ python3 main_training.py --data_path=./data --config_path=config/train.yaml
 > [!TIP]
 > You can override YAML config parameters with CLI parameters like this (overriding lr):
 > ```bash
-> python3 main_training.py --data_path=./data --config_path=config/train.yaml lr=1e-4
+> python3 main_training.py --data_path=./data --config_path=config/train.yaml optimizer.params.lr=1e-4
 > ```

@@ -4,6 +4,25 @@ device: "cuda"
 batch_size: !!int 32
 num_workers: !!int 4
 num_epochs: !!int 3
-warmup_epochs: !!int 1
-lr: !!float 1e-3
-weight_decay: !!float 1e-4
+model:
+  name: "ExampleModel"
+  params:
+    feature_size: !!int 16
+    num_stages: !!int 4
+    num_classes: !!int 100
+optimizer:
+  name: "AdamW"
+  params:
+    lr: !!float 1e-3
+    weight_decay: !!float 1e-4
+scheduler:
+  name: OneCycleLR
+  params:
+    # Using variable interpolation to reference lr.
+    # See OmegaConf documentation for details.
+    max_lr: ${optimizer.params.lr}
+    pct_start: !!float 0.33
+    div_factor: !!float 1e3
+    final_div_factor: !!float 1e4
+loss_fn:
+  name: "CrossEntropyLoss"
