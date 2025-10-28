@@ -51,7 +51,7 @@ Here is the list of the most important stages:
 | 3. Log Directories | 02_log_dirs | e5b5cee | Tracking logs into separate directories under log. <br>This enables basic comparisons like checking plots of different runs. |
 | 4. Using TensorBoard | 04_tensorboard | 6b742dd | Logging into [TensorBoard](https://www.tensorflow.org/tensorboard) for better visualizations and comparison.|
 | 5. Basic Config | 05_basic_config | 556feef | - Introducting basic YAML-based configuration for better reproducibility.<br>- Moving dataset download to separate script under helpers. |
-| 6. Using OmegaConf | 06_omegaconf |  | Using [OmegaConf](https://omegaconf.readthedocs.io) for convenient config handling and object-style config access. |
+| 6. Using OmegaConf | 06_omegaconf | 146971f | Using [OmegaConf](https://omegaconf.readthedocs.io) for convenient config handling and object-style config access. |
 
 > [!IMPORTANT]
 > From this point, the instructions may differ more between each stage, so please read carefully!
