@@ -52,7 +52,7 @@ Here is the list of the most important stages:
 | 4. Using TensorBoard | 04_tensorboard | 6b742dd | Logging into [TensorBoard](https://www.tensorflow.org/tensorboard) for better visualizations and comparison.|
 | 5. Basic Config | 05_basic_config | 556feef | - Introducting basic YAML-based configuration for better reproducibility.<br>- Moving dataset download to separate script under helpers. |
 | 6. Using OmegaConf | 06_omegaconf | 146971f | Using [OmegaConf](https://omegaconf.readthedocs.io) for convenient config handling and object-style config access. |
-| 7. Dynamic Loading | 07_dynamic_loading |  | Loading model, optimizer, scheduler and loss function dynamically based on config.<br> See the [`getattr()`](https://docs.python.org/3/library/functions.html#getattr) documentation for details. |
+| 7. Dynamic Loading | 07_dynamic_loading | 84f347b | Loading model, optimizer, scheduler and loss function dynamically based on config.<br> See the [`getattr()`](https://docs.python.org/3/library/functions.html#getattr) documentation for details. |
 
 ## Training
 > [!IMPORTANT]
